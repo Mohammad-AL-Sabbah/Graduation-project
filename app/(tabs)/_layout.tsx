@@ -9,15 +9,12 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        // إخفاء الشريط السفلي تماماً
+    
         tabBarStyle: { display: 'none' }, 
-        // إخفاء العنوان في الأعلى
         headerShown: false,
-        // تفعيل الألوان المتوافقة مع النظام (اختياري لأننا أخفينا الشريط)
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
       }}>
       
-      {/* الشاشة الرئيسية */}
       <Tabs.Screen
         name="index"
         options={{
@@ -25,7 +22,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* شاشة الاستكشاف */}
       <Tabs.Screen
         name="explore"
         options={{

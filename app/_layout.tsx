@@ -1,43 +1,60 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-import { View } from 'react-native'; // أضفنا View للضرورة
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Stack, router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { View } from "react-native";
+import "react-native-reanimated";
+import { ThemeProviderCustom, useAppTheme } from "../ThemeContext";
+import eventEmitter from "../app/utils/eventEmitter";
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: "(tabs)",
 };
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function LayoutContent() {
+  const { isDarkMode, colors } = useAppTheme();
+
+  // ✅ الاستماع لحدث تسجيل الخروج عند حظر المستخدم
+  useEffect(() => {
+    const handleLogout = () => {
+      router.replace("/auth/login");
+    };
+
+    eventEmitter.on("LOGOUT", handleLogout);
+
+    return () => {
+      eventEmitter.off("LOGOUT", handleLogout);
+    };
+  }, []);
 
   return (
-    // نغلف التطبيق بـ View بخلفية غامقة لمنع أي تسرب للون الأبيض
-    <View style={{ flex: 1, backgroundColor: '#020617' }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-<Stack
-  screenOptions={{
-    headerShown: false,
-    contentStyle: { backgroundColor: '#020617' },
-    
-    // --- أنميشن "القلب" السينمائي ---
-    animation: 'flip',             // يعطي انطباعاً ثلاثي الأبعاد (3D) في الدخول والخروج
-    animationDuration: 500,        // نحتاج وقت أطول قليلاً هنا لتظهر تفاصيل الحركة
-    
-    gestureEnabled: true,
-    fullScreenGestureEnabled: true,
-  }}
->
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="auth" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
-        
-        {/* جعل شريط الساعة والبطارية باللون الفاتح دائماً ليناسب الخلفية السوداء */}
-        <StatusBar style="light" />
-      </ThemeProvider>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+          animation: "default",
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
+        }}
+        initialRouteName="(tabs)"
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="auth" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: "modal", title: "Modal" }}
+        />
+      </Stack>
+
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
     </View>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProviderCustom>
+      <LayoutContent />
+    </ThemeProviderCustom>
   );
 }
